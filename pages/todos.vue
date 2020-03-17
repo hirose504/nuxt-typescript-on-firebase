@@ -1,6 +1,6 @@
 <template>
   <ul>
-    <li v-for="todo in todos" :key="todo.index">
+    <li v-for="todo in todos" :key="todo.id">
       <input type="checkbox" :checked="todo.done" @change="toggle(todo)" />>
       <span :class="{ done: todo.done }">{{ todo.text }}</span>
     </li>
@@ -11,9 +11,12 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
+  async fetch({ store }) {
+    await store.dispatch('todos/fetch')
+  },
   computed: {
     todos() {
       return this.$store.state.todos.list
@@ -21,10 +24,10 @@ export default {
   },
   methods: {
     addTodo(e) {
-      this.$store.commit('todos/add', e.target.value)
+      this.$store.dispatch('todos/add', e.target.value)
       e.target.value = ''
     },
-    ...mapMutations({
+    ...mapActions({
       toggle: 'todos/toggle'
     })
   }
