@@ -75,7 +75,8 @@ const config: Configuration = {
         config.devtool = '#source-map'
       }
     }
-  }
+  },
+  serverMiddleware: ['~/server/middleware/api']
 }
 
 export default config
