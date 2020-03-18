@@ -11,11 +11,6 @@ export default class TodosModule extends VuexModule {
     this.list = list
   }
 
-  @Mutation
-  remove(todo: Todo) {
-    this.list.splice(this.list.indexOf(todo), 1)
-  }
-
   @Action
   async fetch() {
     const list = await $axios.$get<Todo[]>('/api/todos')
