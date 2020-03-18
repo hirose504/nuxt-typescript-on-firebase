@@ -1,5 +1,11 @@
+import MockAdapter from 'axios-mock-adapter'
 import { createStore } from '~/.nuxt/store'
 import { initialiseStores, todosStore } from '~/utils/store-accessor'
+import { $axios } from '~/utils/api'
+
+jest.mock('~/utils/api')
+
+const mock = new MockAdapter($axios)
 
 describe('TodosModule', () => {
   beforeEach(() => {
@@ -10,31 +16,35 @@ describe('TodosModule', () => {
     expect(todosStore.list).toEqual([])
   })
 
-  test('add', () => {
-    todosStore.add('test')
-    expect(todosStore.list).toEqual([{ text: 'test', done: false }])
+  test('fetch ', async () => {
+    mock.onGet('/api/todos').reply(200, [{ id: 1, text: 'test', done: false }])
+    await todosStore.fetch()
+    expect(todosStore.list).toEqual([{ id: 1, text: 'test', done: false }])
   })
 
-  test('remove', () => {
-    todosStore.add('aaaa')
-    todosStore.add('bbbb')
-    todosStore.add('cccc')
-    todosStore.remove(todosStore.list[1])
-    expect(todosStore.list).toEqual([
-      { text: 'aaaa', done: false },
-      { text: 'cccc', done: false }
+  test('add', async () => {
+    mock.onPost('/api/todos').reply(200, [{ id: 1, text: 'test', done: false }])
+    await todosStore.add('test')
+    expect(todosStore.list).toEqual([{ id: 1, text: 'test', done: false }])
+  })
+
+  test('toggle', async () => {
+    mock.onGet('/api/todos').reply(200, [
+      { id: 1, text: 'aaaa', done: false },
+      { id: 2, text: 'bbbb', done: false },
+      { id: 3, text: 'cccc', done: false }
     ])
-  })
-
-  test('toggle', () => {
-    todosStore.add('aaaa')
-    todosStore.add('bbbb')
-    todosStore.add('cccc')
-    todosStore.toggle(todosStore.list[1])
+    mock.onPost('/api/todos/2').reply(200, [
+      { id: 1, text: 'aaaa', done: false },
+      { id: 2, text: 'bbbb', done: true },
+      { id: 3, text: 'cccc', done: false }
+    ])
+    await todosStore.fetch()
+    await todosStore.toggle(todosStore.list[1])
     expect(todosStore.list).toEqual([
-      { text: 'aaaa', done: false },
-      { text: 'bbbb', done: true },
-      { text: 'cccc', done: false }
+      { id: 1, text: 'aaaa', done: false },
+      { id: 2, text: 'bbbb', done: true },
+      { id: 3, text: 'cccc', done: false }
     ])
   })
 })
